@@ -70,6 +70,7 @@ router.post('/saveUserData', async (ctx, next) => {
   userData.set('user', ctx.request.body.user)
   userData.set('data', ctx.request.body.data)
 
+  // 设置权限
   const getAcl = () => {
     const acl = new LC.ACL()
     acl.setPublicReadAccess(!0)
@@ -81,9 +82,9 @@ router.post('/saveUserData', async (ctx, next) => {
 
   // 将对象保存到云端
   userData.save().then(
-    (res) => {
+    (success) => {
       // 成功保存之后，执行其他逻辑
-
+      console.log('保存成功:', success)
       ctx.status = 200
       ctx.body = {
         code: '200',
@@ -92,6 +93,7 @@ router.post('/saveUserData', async (ctx, next) => {
     },
     (error) => {
       // 异常处理
+      console.log('保存失败:', error)
       ctx.status = 500
       ctx.body = {
         code: '500',
