@@ -65,10 +65,10 @@ router.post('/saveUserData', async (ctx, next) => {
   await next()
   const postData = ctx.request.body
   console.log(`koaBody获取到的post数据===>`, postData)
-  const LCShortUrl = LC.Object.extend('user_data')
-  const lcShortUrl = new LCShortUrl()
-  lcShortUrl.set('user', ctx.request.body.user)
-  lcShortUrl.set('data', ctx.request.body.data)
+  const UserData = LC.Object.extend('user_data')
+  const userData = new UserData()
+  userData.set('user', ctx.request.body.user)
+  userData.set('data', ctx.request.body.data)
 
   const getAcl = () => {
     const acl = new LC.ACL()
@@ -77,15 +77,28 @@ router.post('/saveUserData', async (ctx, next) => {
     return acl
   }
 
-  lcShortUrl.setACL(getAcl())
+  userData.setACL(getAcl())
 
-  const saveResult = await lcShortUrl.save()
-  console.log('url:', saveResult)
-  ctx.status = 200
-  ctx.body = {
-    code: '200',
-    message: '保存成功',
-  }
+  // 将对象保存到云端
+  userData.save().then(
+    (res) => {
+      // 成功保存之后，执行其他逻辑
+
+      ctx.status = 200
+      ctx.body = {
+        code: '200',
+        message: '保存成功',
+      }
+    },
+    (error) => {
+      // 异常处理
+      ctx.status = 500
+      ctx.body = {
+        code: '500',
+        message: '保存失败，请稍后再试',
+      }
+    }
+  )
 })
 
 router.post('/getUserData', async (ctx, next) => {
@@ -108,6 +121,12 @@ router.post('/getUserData', async (ctx, next) => {
         code: '200',
         message: '查询成功',
         data,
+      }
+    } else {
+      ctx.status = 500
+      ctx.body = {
+        code: '500',
+        message: '查询失败，请稍后再试',
       }
     }
   }
