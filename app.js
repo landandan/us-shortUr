@@ -80,9 +80,30 @@ router.post('/saveUserData', async (ctx, next) => {
 
   userData.setACL(getAcl())
 
+  let status = 200
+  let response = {}
+
   // 将对象保存到云端
   userData.save().then(
-    (success) => {
+    // (success) => {
+    //   // 成功保存之后，执行其他逻辑
+    //   console.log('保存成功:', success)
+    //   status = 200
+    //   response = {
+    //     code: '200',
+    //     message: '保存成功',
+    //   }
+    // },
+    // (error) => {
+    //   // 异常处理
+    //   console.log('保存失败:', error)
+    //   status = 500
+    //   response = {
+    //     code: '500',
+    //     message: '保存失败，请稍后再试',
+    //   }
+    // }
+    function(success) {
       // 成功保存之后，执行其他逻辑
       console.log('保存成功:', success)
       ctx.status = 200
@@ -91,7 +112,7 @@ router.post('/saveUserData', async (ctx, next) => {
         message: '保存成功',
       }
     },
-    (error) => {
+    function(error) {
       // 异常处理
       console.log('保存失败:', error)
       ctx.status = 500
@@ -101,6 +122,9 @@ router.post('/saveUserData', async (ctx, next) => {
       }
     }
   )
+
+  // ctx.status = status
+  // ctx.body = response
 })
 
 router.post('/getUserData', async (ctx, next) => {
