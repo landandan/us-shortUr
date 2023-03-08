@@ -29,6 +29,13 @@ app.use(router.routes())
 // Loads LeanEngine middleware.
 app.use(AV.koa())
 
+app.use(async (ctx, next) => {
+  ctx.set('Access-Control-Allow-Origin', '*')
+  ctx.set('Access-Control-Allow-Headers', 'Content-Type')
+  ctx.set('Access-Control-Allow-Methods', 'POST')
+  await next()
+})
+
 app.use(bodyParser())
 
 router.get('/', async function (ctx) {
@@ -106,7 +113,7 @@ router.post('/saveUserData', async (ctx, next) => {
       }
     )
   }
-  
+
   await saveData()
   ctx.status = status
   ctx.body = response
