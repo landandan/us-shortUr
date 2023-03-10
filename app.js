@@ -70,51 +70,70 @@ router.get('/:id', async (ctx, next) => {
 router.post('/saveUserData', async (ctx, next) => {
   // console.log('saveUserData ctx:', ctx.req.body)
   await next()
-  const postData = ctx.request.body
+  const postData = ctx.request.body || '[]'
   console.log(`koaBody获取到的post数据===>`, postData)
+
+  const jsonData = JSON.parse(postData)
   const UserData = LC.Object.extend('user_data')
-  const userData = new UserData()
-  userData.set('user', ctx.request.body.user)
-  userData.set('data', ctx.request.body.data)
-
-  // 设置权限
-  const getAcl = () => {
-    const acl = new LC.ACL()
-    acl.setPublicReadAccess(!0)
-    acl.setPublicWriteAccess(!1)
-    return acl
-  }
-
-  userData.setACL(getAcl())
+  const saveList = []
 
   let status = 200
   let response = {}
+  if (jsonData.length > 0) {
+    for (let i = 0; i < jsonData.length; i++) {
+      const userData = new UserData()
+      userData.set('user', ctx.request.body.user)
+      userData.set('id', jsonData[i].id)
+      userData.set('name', jsonData[i].name)
+      userData.set('data', jsonData[i].data)
+      userData.set('saveTime', jsonData[i].saveTime)
 
-  // 将对象保存到云端
-  const saveData = async () => {
-    return userData.save().then(
-      (success) => {
-        // 成功保存之后，执行其他逻辑
-        console.log('保存成功:', success)
-        status = 200
-        response = {
-          code: '200',
-          message: '保存成功',
-        }
-      },
-      (error) => {
-        // 异常处理
-        console.log('保存失败:', error)
-        status = 500
-        response = {
-          code: '500',
-          message: '保存失败，请稍后再试',
-        }
+      // 设置权限
+      const getAcl = () => {
+        const acl = new LC.ACL()
+        acl.setPublicReadAccess(!0)
+        acl.setPublicWriteAccess(!1)
+        return acl
       }
-    )
+
+      userData.setACL(getAcl())
+
+      saveList.push(userData)
+    }
+
+    // 将对象保存到云端
+    const saveData = async () => {
+      return UserData.save_all(saveList).then(
+        (success) => {
+          // 成功保存之后，执行其他逻辑
+          console.log('保存成功:', success)
+          status = 200
+          response = {
+            code: '200',
+            message: '保存成功',
+          }
+        },
+        (error) => {
+          // 异常处理
+          console.log('保存失败:', error)
+          status = 500
+          response = {
+            code: '500',
+            message: '保存失败，请稍后再试',
+          }
+        }
+      )
+    }
+
+    await saveData()
+  } else {
+    status = 200
+    response = {
+      code: '200',
+      message: '没有检测到数据需要保存',
+    }
   }
 
-  await saveData()
   ctx.status = status
   ctx.body = response
 })
@@ -128,6 +147,7 @@ router.post('/getUserData', async (ctx, next) => {
     query.equalTo('user', user)
     const res = await query.find()
     if (res && res.length > 0) {
+      console.log('res:', res)
       const data = _.get(res, '0.attributes.data', '')
       console.log('=====:', data)
       // this.redirect(redirectUrl);
@@ -141,10 +161,10 @@ router.post('/getUserData', async (ctx, next) => {
         data,
       }
     } else {
-      ctx.status = 500
+      ctx.status = 200
       ctx.body = {
-        code: '500',
-        message: '查询失败，请稍后再试',
+        code: '200',
+        message: '没有查到对应数据，请确认手机号码再导入',
       }
     }
   }
