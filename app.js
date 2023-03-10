@@ -104,13 +104,13 @@ router.post('/saveUserData', async (ctx, next) => {
 
     // 将对象保存到云端
     const saveData = async () => {
-      return UserData.save_all(saveList).then(
+      return UserData.saveAll(saveList).then(
         (success) => {
           // 成功保存之后，执行其他逻辑
           console.log('保存成功:', success)
           status = 200
           response = {
-            code: '200',
+            success: true,
             message: '保存成功',
           }
         },
@@ -119,7 +119,7 @@ router.post('/saveUserData', async (ctx, next) => {
           console.log('保存失败:', error)
           status = 500
           response = {
-            code: '500',
+            success: false,
             message: '保存失败，请稍后再试',
           }
         }
@@ -130,7 +130,7 @@ router.post('/saveUserData', async (ctx, next) => {
   } else {
     status = 200
     response = {
-      code: '200',
+      success: false,
       message: '没有检测到数据需要保存',
     }
   }
@@ -157,14 +157,14 @@ router.post('/getUserData', async (ctx, next) => {
       ctx.status = 200
       // ctx.redirect(redirectUrl)
       ctx.body = {
-        code: '200',
+        success: true,
         message: '查询成功',
         data,
       }
     } else {
       ctx.status = 200
       ctx.body = {
-        code: '200',
+        success: false,
         message: '没有查到对应数据，请确认手机号码再导入',
       }
     }
