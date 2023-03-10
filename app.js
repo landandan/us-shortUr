@@ -70,23 +70,22 @@ router.get('/:id', async (ctx, next) => {
 router.post('/saveUserData', async (ctx, next) => {
   // console.log('saveUserData ctx:', ctx.req.body)
   await next()
-  const postData = ctx.request.body || '[]'
+  const postData = ctx.request.body || []
   console.log(`koaBody获取到的post数据===>`, postData)
 
-  const jsonData = JSON.parse(postData)
   const UserData = LC.Object.extend('user_data')
   const saveList = []
 
   let status = 200
   let response = {}
-  if (jsonData.length > 0) {
-    for (let i = 0; i < jsonData.length; i++) {
+  if (postData.length > 0) {
+    for (let i = 0; i < postData.length; i++) {
       const userData = new UserData()
       userData.set('user', ctx.request.body.user)
-      userData.set('id', jsonData[i].id)
-      userData.set('name', jsonData[i].name)
-      userData.set('data', jsonData[i].data)
-      userData.set('saveTime', jsonData[i].saveTime)
+      userData.set('id', postData[i].id)
+      userData.set('name', postData[i].name)
+      userData.set('data', postData[i].data)
+      userData.set('saveTime', postData[i].saveTime)
 
       // 设置权限
       const getAcl = () => {
