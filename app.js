@@ -82,7 +82,7 @@ router.post('/saveUserData', async (ctx, next) => {
     if (res && res.length > 0) {
       // console.log('res:', res)
       oldList = _.map(res, (item) => {
-        return item.attributes
+        return { ...item.attributes, objId: item.id }
       })
     }
   }
@@ -98,16 +98,16 @@ router.post('/saveUserData', async (ctx, next) => {
     for (let i = 0; i < dataList.length; i++) {
       if (
         _.some(oldList, (old) => {
-          return old.dataId == dataList[i].id
+          return old.id == dataList[i].id
         })
       ) {
         // 更新
         const userData = new UserData()
         userData.create_without_data(
-          _.find(oldList, (o) => o.dataId == dataList[i].id).id
+          _.find(oldList, (o) => o.dataId == dataList[i].id).objId
         )
         userData.set('user', user)
-        userData.set('dataId', dataList[i].id)
+        userData.set('id', dataList[i].id)
         userData.set('name', dataList[i].name)
         userData.set('data', dataList[i].data)
         userData.set('saveTime', dataList[i].saveTime)
@@ -127,7 +127,7 @@ router.post('/saveUserData', async (ctx, next) => {
         // 新增
         const userData = new UserData()
         userData.set('user', user)
-        userData.set('dataId', dataList[i].id)
+        userData.set('id', dataList[i].id)
         userData.set('name', dataList[i].name)
         userData.set('data', dataList[i].data)
         userData.set('saveTime', dataList[i].saveTime)
@@ -196,7 +196,6 @@ router.post('/getUserData', async (ctx, next) => {
       const data = _.map(res, (item) => {
         return {
           ...item.attributes,
-          id: item.attributes.dataId,
         }
       })
 
