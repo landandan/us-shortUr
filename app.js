@@ -73,6 +73,20 @@ router.post('/saveUserData', async (ctx, next) => {
   const postData = ctx.request.body || []
   console.log(`koaBody获取到的post数据===>`, postData)
 
+  const user = ctx.request.body.user
+  let oldList = []
+  if (!_.isEmpty(user)) {
+    const query = new LC.Query('user_data')
+    query.equalTo('user', user)
+    const res = await query.find()
+    if (res && res.length > 0) {
+      // console.log('res:', res)
+      oldList = _.map(res, (item) => {
+        return item.attributes
+      })
+    }
+  }
+
   const UserData = LC.Object.extend('user_data')
   const saveList = []
 
@@ -82,24 +96,54 @@ router.post('/saveUserData', async (ctx, next) => {
   let response = {}
   if (dataList.length > 0) {
     for (let i = 0; i < dataList.length; i++) {
-      const userData = new UserData()
-      userData.set('user', ctx.request.body.user)
-      userData.set('id', dataList[i].id)
-      userData.set('name', dataList[i].name)
-      userData.set('data', dataList[i].data)
-      userData.set('saveTime', dataList[i].saveTime)
+      if (
+        _.some(oldList, (old) => {
+          return old.dataId == dataList[i].id
+        })
+      ) {
+        // 更新
+        const userData = new UserData()
+        userData.create_without_data(
+          _.find(oldList, (o) => o.dataId == dataList[i].id).id
+        )
+        userData.set('user', user)
+        userData.set('dataId', dataList[i].id)
+        userData.set('name', dataList[i].name)
+        userData.set('data', dataList[i].data)
+        userData.set('saveTime', dataList[i].saveTime)
 
-      // 设置权限
-      const getAcl = () => {
-        const acl = new LC.ACL()
-        acl.setPublicReadAccess(!0)
-        acl.setPublicWriteAccess(!1)
-        return acl
+        // 设置权限
+        const getAcl = () => {
+          const acl = new LC.ACL()
+          acl.setPublicReadAccess(!0)
+          acl.setPublicWriteAccess(!1)
+          return acl
+        }
+
+        userData.setACL(getAcl())
+
+        saveList.push(userData)
+      } else {
+        // 新增
+        const userData = new UserData()
+        userData.set('user', user)
+        userData.set('dataId', dataList[i].id)
+        userData.set('name', dataList[i].name)
+        userData.set('data', dataList[i].data)
+        userData.set('saveTime', dataList[i].saveTime)
+
+        // 设置权限
+        const getAcl = () => {
+          const acl = new LC.ACL()
+          acl.setPublicReadAccess(!0)
+          acl.setPublicWriteAccess(!1)
+          return acl
+        }
+
+        userData.setACL(getAcl())
+
+        saveList.push(userData)
       }
-
-      userData.setACL(getAcl())
-
-      saveList.push(userData)
     }
 
     // 将对象保存到云端
@@ -149,7 +193,13 @@ router.post('/getUserData', async (ctx, next) => {
     const res = await query.find()
     if (res && res.length > 0) {
       console.log('res:', res)
-      const data = _.get(res, '0.attributes.data', '')
+      const data = _.map(res, (item) => {
+        return {
+          ...item.attributes,
+          id: item.attributes.dataId,
+        }
+      })
+
       console.log('=====:', data)
       // this.redirect(redirectUrl);
       // ctx.type = 'text/javascript'
