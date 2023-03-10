@@ -76,16 +76,18 @@ router.post('/saveUserData', async (ctx, next) => {
   const UserData = LC.Object.extend('user_data')
   const saveList = []
 
+  const dataList = postData.data
+
   let status = 200
   let response = {}
-  if (postData.length > 0) {
-    for (let i = 0; i < postData.length; i++) {
+  if (dataList.length > 0) {
+    for (let i = 0; i < dataList.length; i++) {
       const userData = new UserData()
       userData.set('user', ctx.request.body.user)
-      userData.set('id', postData[i].id)
-      userData.set('name', postData[i].name)
-      userData.set('data', postData[i].data)
-      userData.set('saveTime', postData[i].saveTime)
+      userData.set('id', dataList[i].id)
+      userData.set('name', dataList[i].name)
+      userData.set('data', dataList[i].data)
+      userData.set('saveTime', dataList[i].saveTime)
 
       // 设置权限
       const getAcl = () => {
