@@ -67,7 +67,7 @@ router.get('/:id', async (ctx, next) => {
   }
 })
 
-router.post('/saveUserData', async (ctx, next) => {
+router.post('/api/saveUserData', async (ctx, next) => {
   // console.log('saveUserData ctx:', ctx.req.body)
   await next()
   const postData = ctx.request.body || []
@@ -183,7 +183,7 @@ router.post('/saveUserData', async (ctx, next) => {
   ctx.body = response
 })
 
-router.post('/getUserData', async (ctx, next) => {
+router.post('/api/getUserData', async (ctx, next) => {
   // console.log('getUserData ctx:', ctx)
   await next()
   const user = ctx.request.body.user
@@ -214,7 +214,7 @@ router.post('/getUserData', async (ctx, next) => {
       ctx.status = 200
       ctx.body = {
         success: false,
-        message: '没有查到对应数据，请确认手机号码再导入',
+        message: '没有查到对应数据，请确认手机号码再尝试',
       }
     }
   }
